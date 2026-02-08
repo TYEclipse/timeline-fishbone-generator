@@ -1,0 +1,407 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+LaTeX code generator for Timeline Fishbone Generator.
+
+Generates publication-ready TikZ code for timeline fishbone diagrams.
+"""
+
+import logging
+from typing import Any, Dict, List
+
+import pandas as pd
+
+from .config import (
+    ArrowConfig,
+    ColorConfig,
+    LayoutConfig,
+    OutputConfig,
+    TimeLogicConfig,
+    VisualConfig,
+)
+from .layout_engine import SmartLayoutEngine
+
+logger = logging.getLogger(__name__)
+
+
+class LaTeXGenerator:
+    """
+    LaTeX TikZ code generator for timeline fishbone diagrams.
+    
+    Generates complete, publication-ready LaTeX code with proper styling,
+    layout, and formatting.
+    """
+    
+    def __init__(
+        self,
+        layout: LayoutConfig,
+        time_logic: TimeLogicConfig,
+        visual: VisualConfig,
+        colors: ColorConfig,
+        arrows: ArrowConfig,
+        output: OutputConfig,
+    ):
+        """
+        Initialize LaTeX generator.
+        
+        Args:
+            layout: Layout configuration
+            time_logic: Time logic configuration
+            visual: Visual style configuration
+            colors: Color scheme configuration
+            arrows: Arrow configuration
+            output: Output configuration
+        """
+        self.layout = layout
+        self.time_logic = time_logic
+        self.visual = visual
+        self.colors = colors
+        self.arrows = arrows
+        self.output = output
+        self.layout_engine = SmartLayoutEngine(layout, time_logic)
+        logger.debug("LaTeXGenerator initialized")
+    
+    def _generate_preamble(self) -> str:
+        """Generate LaTeX preamble."""
+        lines = [
+            r"\begin{figure}[htbp]",
+            r"\centering",
+            f"\\begin{{adjustbox}}{{center, max width={self.output.adjustbox_width}, "
+            f"max height=0.8\\textheight, keepaspectratio}}",
+            r"\pgfdeclarelayer{background}",
+            r"\pgfdeclarelayer{foreground}",
+            r"\pgfsetlayers{background,main,foreground}",
+            r"\begin{tikzpicture}[",
+            "    scale=1.0,",
+            "    transform shape,",
+            r"    font=\footnotesize\sffamily,",
+        ]
+        return '\n'.join(lines)
+    
+    def _generate_styles(self) -> str:
+        """Generate TikZ style definitions."""
+        styles = [
+            "    % ========================================",
+            "    % Category color definitions",
+            "    % ========================================",
+        ]
+        
+        # Category styles
+        categories = [
+            ('singleproto', self.colors.color_single),
+            ('multiproto', self.colors.color_multi),
+            ('adaptive', self.colors.color_adaptive),
+            ('vl', self.colors.color_vl),
+            ('dense', self.colors.color_dense),
+            ('attention', self.colors.color_attention),
+            ('hybrid', self.colors.color_hybrid),
+        ]
+        
+        for cat, color in categories:
+            styles.append(
+                f"    {cat}/.style={{\n"
+                f"        fill={color}, draw={color}!60!black, "
+                f"line width={self.visual.line_width},\n"
+                f"        rounded corners={self.visual.rounded_corners}, "
+                f"minimum width={self.visual.node_width}, "
+                f"minimum height={self.visual.node_height},\n"
+                f"        align=center, font={self.visual.node_font}, text=black!80, "
+                f"inner sep={self.visual.inner_sep}\n"
+                f"    }},"
+            )
+        
+        # Additional styles
+        styles.extend([
+            "    year/.style={",
+            "        circle, fill=white, draw=black, line width=1.2pt,",
+            r"        minimum size=0.75cm, font=\bfseries\footnotesize, inner sep=0pt",
+            "    },",
+            "    axis/.style={",
+            f"        line width=1.5pt, draw={self.colors.axis_color}",
+            "    },",
+            "    arrow/.style={",
+            f"        {self.arrows.arrow_style},",
+            f"        line width=0.8pt, draw={self.arrows.arrow_color},",
+            f"        shorten >={self.arrows.arrow_shorten},",
+            f"        shorten <={self.arrows.arrow_shorten}",
+            "    },",
+            "    spine/.style={",
+            "        line width=0.8pt, draw=gray!50, -",
+            "    },",
+            "    conn/.style={",
+            f"        line width=0.5pt, draw={self.colors.conn_color}",
+            "    },",
+            "    methodmatrix/.style={",
+            "        matrix of nodes, row sep=4pt, column sep=3pt,",
+            "        nodes in empty cells, inner sep=0pt",
+            "    }",
+            "]",
+        ])
+        
+        return '\n'.join(styles)
+    
+    def _format_method_text(self, name: str, ref: str) -> str:
+        """
+        Format method text (single or double line).
+        
+        Args:
+            name: Method name
+            ref: Citation reference
+            
+        Returns:
+            Formatted LaTeX text
+        """
+        ref_cmd = f"{{\\{self.visual.ref_font}\\cite{{{ref}}}}}"
+        
+        if self.visual.max_lines == 1:
+            # Single line: use ~ separator
+            return f"{name}~{ref_cmd}"
+        else:
+            # Double line: use line break
+            return f"{name}\\\\[-2pt]{ref_cmd}"
+    
+    def _generate_timeline_axis(self, layout_params: Dict[str, Any]) -> str:
+        """Generate timeline axis and year coordinates."""
+        total_width = layout_params['total_width']
+        years = layout_params['years']
+        
+        lines = [
+            "    % ========================================",
+            "    % 1. Draw timeline axis and define year coordinates",
+            "    % ========================================",
+            f"    \\draw[axis] (0,0) -- ({total_width},0);",
+            "",
+            "    % Define year positions",
+        ]
+        
+        # Generate coordinate definitions
+        for year in years:
+            pos = layout_params['positions'][year]
+            lines.append(f"    \\coordinate (Y{year}) at ({pos},0);")
+        
+        # Generate arrows between years
+        if len(years) > 1:
+            lines.extend([
+                "",
+                "    % Draw arrows between year nodes",
+                "    \\foreach \\year/\\nextyear in {",
+            ])
+            
+            arrow_pairs = [f"{years[i]}/{years[i+1]}" for i in range(len(years) - 1)]
+            lines.append("        " + ", ".join(arrow_pairs) + "    } {")
+            lines.append("        \\draw[arrow] (Y\\year) -- (Y\\nextyear);")
+            lines.append("    }")
+        
+        return '\n'.join(lines)
+    
+    def _generate_method_nodes(
+        self, df: pd.DataFrame, layout_params: Dict[str, Any]
+    ) -> str:
+        """Generate method nodes."""
+        lines = [
+            "",
+            "    % ========================================",
+            "    % 2. Define all method nodes",
+            "    % ========================================",
+        ]
+        
+        year_groups = df.groupby('年份')
+        
+        for year in sorted(df['年份'].unique()):
+            if year not in year_groups.groups:
+                continue
+            
+            group = year_groups.get_group(year)
+            side = self.layout_engine.determine_side(year)
+            
+            lines.append(f"")
+            lines.append(
+                f"    % --- {year} "
+                f"({'upper' if side == 'above' else 'lower'}) ---"
+            )
+            
+            if len(group) == 1:
+                # Single node
+                row = group.iloc[0]
+                text = self._format_method_text(row['方法名'], row['引用标识'])
+                style = row['种类']
+                anchor = "above" if side == "above" else "below"
+                
+                lines.append(
+                    f"    \\node[{style}, {anchor}={layout_params['adjusted_branch']}cm "
+                    f"of Y{year}] (M{year}) {{{text}}};"
+                )
+            else:
+                # Multiple nodes - use matrix
+                anchor = "south" if side == "above" else "north"
+                matrix_pos = (
+                    f"{anchor}={layout_params['adjusted_branch']}cm of Y{year}"
+                )
+                
+                lines.append(
+                    f"    \\matrix[methodmatrix, {matrix_pos}, anchor={anchor}] "
+                    f"(M{year}) {{"
+                )
+                
+                # Generate matrix rows
+                for idx, (_, row) in enumerate(group.iterrows()):
+                    text = self._format_method_text(row['方法名'], row['引用标识'])
+                    style = row['种类']
+                    
+                    # Multi-column layout for many nodes
+                    if len(group) > 3 and idx % 2 == 0 and idx < len(group) - 1:
+                        next_row = group.iloc[idx + 1]
+                        next_text = self._format_method_text(
+                            next_row['方法名'], next_row['引用标识']
+                        )
+                        next_style = next_row['种类']
+                        lines.append(f"        \\node[{style}] {{{text}}}; &")
+                        lines.append(f"        \\node[{next_style}] {{{next_text}}}; \\\\")
+                    elif not (len(group) > 3 and idx % 2 == 1):
+                        lines.append(f"        \\node[{style}] {{{text}}}; \\\\")
+                
+                lines.append("    };")
+        
+        return '\n'.join(lines)
+    
+    def _generate_background_layer(self, df: pd.DataFrame) -> str:
+        """Generate background layer connections."""
+        lines = [
+            "",
+            "    % ========================================",
+            "    % 3. Draw all connections in background layer",
+            "    % ========================================",
+            r"    \begin{pgfonlayer}{background}",
+            "        % Year node spines",
+        ]
+        
+        years = sorted(df['年份'].unique())
+        
+        # Spines
+        lines.append("        \\foreach \\year in {" + ", ".join(map(str, years)) + "} {")
+        lines.append(
+            f"            \\draw[spine] (Y\\year.north) -- ++(0,{self.layout.spine_length});"
+        )
+        lines.append(
+            f"            \\draw[spine] (Y\\year.south) -- ++(0,-{self.layout.spine_length});"
+        )
+        lines.append("        }")
+        lines.append("")
+        lines.append("        % Connect methods to year nodes")
+        
+        # Connection lines
+        for year in years:
+            side = self.layout_engine.determine_side(year)
+            if side == "above":
+                lines.append(
+                    f"        \\draw[conn] (M{year}.south) -- "
+                    f"([yshift={self.layout.spine_length}cm]Y{year});"
+                )
+            else:
+                lines.append(
+                    f"        \\draw[conn] (M{year}.north) -- "
+                    f"([yshift=-{self.layout.spine_length}cm]Y{year});"
+                )
+        
+        lines.append(r"    \end{pgfonlayer}")
+        
+        return '\n'.join(lines)
+    
+    def _generate_year_nodes(self, df: pd.DataFrame) -> str:
+        """Generate year nodes (top layer)."""
+        years = sorted(df['年份'].unique())
+        
+        lines = [
+            "",
+            "    % ========================================",
+            "    % 4. Draw year nodes on top layer",
+            "    % ========================================",
+            "    \\foreach \\year in {" + ", ".join(map(str, years)) + "} {",
+            "        \\node[year] at (Y\\year) {\\year};",
+            "    }",
+        ]
+        
+        return '\n'.join(lines)
+    
+    def _generate_bounding_box(self) -> str:
+        """Generate bounding box extension."""
+        return (
+            "\n"
+            "    % ========================================\n"
+            "    % 5. Extend bounding box\n"
+            "    % ========================================\n"
+            r"    \path (current bounding box.south west) +(-0.3,-0.5) "
+            "(current bounding box.north east) +(0.3,0.5);"
+        )
+    
+    def _generate_caption(self) -> str:
+        """Generate legend and caption."""
+        lines = [
+            r"\end{tikzpicture}",
+            r"\end{adjustbox}",
+            f"\\caption{{{self.output.caption}。",
+        ]
+        
+        if self.output.show_legend:
+            # Generate legend
+            legend_items = [
+                (self.colors.color_single, "cyan!50!black", "单原型方法"),
+                (self.colors.color_multi, "green!50!black", "多原型方法"),
+                (self.colors.color_adaptive, "yellow!70!black", "自适应方法"),
+                (self.colors.color_vl, "purple!60!black", "视觉语言方法"),
+                (self.colors.color_dense, "orange!70!black", "稠密匹配"),
+                (self.colors.color_attention, "red!60!black", "注意力匹配"),
+                (self.colors.color_hybrid, "gray!70!black", "混合细化"),
+            ]
+            
+            legend_text = "颜色标识："
+            for fill, draw, desc in legend_items:
+                legend_text += (
+                    r"{\protect\tikz[baseline=-0.5ex]\protect\node["
+                    f"fill={fill},draw={draw},rounded corners=2pt,"
+                    f"inner sep=2pt,font=\\tiny] {{{desc}}};}}" + " "
+                )
+            
+            lines.append(legend_text)
+        
+        lines.append(f"}}")
+        lines.append(f"\\label{{{self.output.label}}}")
+        lines.append(r"\end{figure}")
+        
+        return '\n'.join(lines)
+    
+    def generate(self, df: pd.DataFrame) -> str:
+        """
+        Generate complete LaTeX code.
+        
+        Args:
+            df: Input DataFrame with validated data
+            
+        Returns:
+            Complete LaTeX code string
+        """
+        logger.info("开始生成 LaTeX 代码")
+        
+        # Calculate layout
+        layout_params = self.layout_engine.calculate_layout(df)
+        
+        # Generate sections
+        parts = [
+            self._generate_preamble(),
+            self._generate_styles(),
+            self._generate_timeline_axis(layout_params),
+            self._generate_method_nodes(df, layout_params),
+            self._generate_background_layer(df),
+            self._generate_year_nodes(df),
+            self._generate_bounding_box(),
+            self._generate_caption(),
+        ]
+        
+        latex_code = '\n'.join(parts)
+        
+        logger.info(
+            f"LaTeX 代码生成完成: {len(latex_code)} 字符, "
+            f"{len(latex_code.split(chr(10)))} 行"
+        )
+        
+        return latex_code
