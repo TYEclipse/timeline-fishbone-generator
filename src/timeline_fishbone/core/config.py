@@ -87,6 +87,7 @@ class VisualConfig:
 class ColorConfig:
     """Color scheme configuration."""
     
+    # Legacy color fields for backward compatibility
     color_single: str = "cyan!20"
     color_multi: str = "green!20"
     color_adaptive: str = "yellow!40"
@@ -96,6 +97,15 @@ class ColorConfig:
     color_hybrid: str = "gray!30"
     axis_color: str = "black!70"
     conn_color: str = "gray!60"
+    
+    # Default color palette for dynamic category assignment
+    DEFAULT_COLORS = [
+        "cyan!20", "green!20", "yellow!40", "purple!20",
+        "orange!30", "red!20", "blue!20", "pink!20",
+        "teal!20", "lime!30", "magenta!20", "brown!20",
+        "violet!20", "olive!30", "navy!20", "maroon!20",
+        "gray!30", "indigo!20", "gold!30", "coral!20"
+    ]
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -105,6 +115,38 @@ class ColorConfig:
     def from_dict(cls, data: Dict[str, Any]) -> "ColorConfig":
         """Create from dictionary."""
         return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+    
+    def get_category_colors(self, categories: list) -> Dict[str, str]:
+        """
+        Generate color mapping for given categories.
+        
+        Args:
+            categories: List of category names
+            
+        Returns:
+            Dictionary mapping category names to colors
+        """
+        # Legacy mapping for backward compatibility
+        legacy_mapping = {
+            'singleproto': self.color_single,
+            'multiproto': self.color_multi,
+            'adaptive': self.color_adaptive,
+            'vl': self.color_vl,
+            'dense': self.color_dense,
+            'attention': self.color_attention,
+            'hybrid': self.color_hybrid,
+        }
+        
+        color_map = {}
+        for i, category in enumerate(sorted(categories)):
+            # Use legacy color if available
+            if category in legacy_mapping:
+                color_map[category] = legacy_mapping[category]
+            else:
+                # Assign color from palette, cycling if necessary
+                color_map[category] = self.DEFAULT_COLORS[i % len(self.DEFAULT_COLORS)]
+        
+        return color_map
 
 
 @dataclass
