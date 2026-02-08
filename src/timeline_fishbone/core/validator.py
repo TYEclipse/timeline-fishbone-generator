@@ -30,6 +30,27 @@ class DataValidator:
     """
 
     REQUIRED_COLUMNS = ["年份", "种类", "方法名", "引用标识"]
+    # Valid categories - supports both predefined and custom categories
+    VALID_CATEGORIES = {
+        "singleproto",
+        "multiproto",
+        "adaptive",
+        "vl",
+        "dense",
+        "attention",
+        "hybrid",
+        # Additional categories from sample data
+        "CAM生成",
+        "自监督聚类",
+        "视觉语言模型",
+        "视觉基础模型",
+        "在线微调方法",
+        "时空记忆方法",
+        "多粒度原型方法",
+        "点级记忆方法",
+        "局部注意力方法",
+        "运动模式方法",
+    }
 
     @classmethod
     def validate_columns(cls, df: pd.DataFrame) -> None:
@@ -77,7 +98,7 @@ class DataValidator:
     @classmethod
     def validate_categories(cls, df: pd.DataFrame) -> None:
         """
-        Validate that categories column exists and has values.
+        Validate that categories column exists and has valid values.
 
         Args:
             df: DataFrame to validate
@@ -89,6 +110,15 @@ class DataValidator:
         categories = set(df["种类"].unique())
         if not categories:
             raise ValidationError("未找到任何种类")
+
+        # Check if all categories are valid
+        invalid_categories = categories - cls.VALID_CATEGORIES
+        if invalid_categories:
+            invalid_str = ", ".join(sorted(invalid_categories))
+            valid_str = ", ".join(sorted(cls.VALID_CATEGORIES))
+            raise ValidationError(
+                f"无效的种类: {invalid_str}。" f"有效种类: {valid_str}"
+            )
 
         cat_str = ", ".join(sorted(categories))
         logger.info(f"检测到 {len(categories)} 个种类: {cat_str}")

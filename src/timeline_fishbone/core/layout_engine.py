@@ -7,7 +7,7 @@ Calculates optimal node positions and spacing to prevent overlaps.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import pandas as pd
 
@@ -102,12 +102,17 @@ class SmartLayoutEngine:
 
         # Calculate year positions
         start = 0
+        positions: Dict[int, float] = cast(
+            Dict[int, float], layout_params["positions"]
+        )
+        year_spacing: float = cast(float, layout_params["adjusted_spacing"])
+
         for i, year in enumerate(years):
-            year_pos = start + i * layout_params["adjusted_spacing"]
-            layout_params["positions"][year] = year_pos
+            year_pos = start + i * year_spacing
+            positions[year] = year_pos
 
         if len(years) > 1:
-            total_w = (len(years) - 1) * layout_params["adjusted_spacing"]
+            total_w = (len(years) - 1) * year_spacing
         else:
             total_w = 0
         layout_params["total_width"] = total_w

@@ -88,9 +88,10 @@ class TestLaTeXGenerator:
         assert "\\begin{tikzpicture}" in preamble
         assert "pgfdeclarelayer" in preamble
 
-    def test_generate_styles(self, generator):
+    def test_generate_styles(self, generator, sample_data):
         """Test style definitions generation."""
-        styles = generator._generate_styles()
+        categories = sample_data["种类"].unique().tolist()
+        styles = generator._generate_styles(categories)
         assert "singleproto/.style" in styles
         assert "multiproto/.style" in styles
         assert "year/.style" in styles
@@ -130,9 +131,14 @@ class TestLaTeXGenerator:
         assert "\\node[year]" in year_nodes
         assert "2020" in year_nodes or "\\year" in year_nodes
 
-    def test_generate_caption(self, generator):
+    def test_generate_caption(self, generator, sample_data):
         """Test caption generation."""
-        caption = generator._generate_caption()
+        categories = sample_data["种类"].unique().tolist()
+        # First need to set category_colors for caption generation
+        generator.category_colors = generator.colors.get_category_colors(
+            categories
+        )
+        caption = generator._generate_caption(categories)
 
         assert "\\caption" in caption
         assert "\\label" in caption
