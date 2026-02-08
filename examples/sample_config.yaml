@@ -1,0 +1,48 @@
+# Example configuration file for Timeline Fishbone Generator
+
+layout:
+  timeline_width: "16cm"
+  year_spacing: 2.7
+  branch_distance: 1.2
+  spine_length: 0.4
+  smart_spacing: true
+  min_year_spacing: 2.0
+
+time_logic:
+  time_direction: "right"
+  start_year: 2019
+  end_year: 2025
+  upper_years: "odd"  # Can be: "odd", "even", or "2019,2021,2023"
+  lower_years: "even"
+
+visual:
+  node_width: "2.6cm"
+  node_height: "0.5cm"
+  node_font: "\\tiny\\bfseries"
+  ref_font: "\\tiny"
+  inner_sep: "1.5pt"
+  line_width: "0.8pt"
+  rounded_corners: "3pt"
+  max_lines: 1  # 1 for single line, 2 for double line
+
+colors:
+  color_single: "cyan!20"
+  color_multi: "green!20"
+  color_adaptive: "yellow!40"
+  color_vl: "purple!20"
+  color_dense: "orange!30"
+  color_attention: "red!20"
+  color_hybrid: "gray!30"
+  axis_color: "black!70"
+  conn_color: "gray!60"
+
+arrows:
+  arrow_style: "-{Stealth[length=3mm, width=2mm]}"
+  arrow_color: "gray!70"
+  arrow_shorten: "0.38cm"
+
+output:
+  show_legend: true
+  caption: "时间线鱼骨图"
+  label: "fig:timeline"
+  adjustbox_width: "0.8\\textwidth"
