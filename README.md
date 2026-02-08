@@ -163,7 +163,7 @@ layout:
 
 time_logic:
   time_direction: "right"
-  upper_years: "odd"  # or "even" or "2019,2021,2023"
+  upper_years: "order"  # or "odd" or "even" or "2019,2021,2023"
 
 visual:
   node_width: "2.6cm"
@@ -236,7 +236,7 @@ Options:
   --smart-spacing           Enable smart spacing adjustment
   --max-lines {1,2}         Maximum lines per node
   --time-direction {left,right}
-  --upper-years RULE        Upper branch rule: odd, even, or years
+  --upper-years RULE        Upper branch rule: order, odd, even, or years
   
   --color-single COLOR      Single-prototype color
   --color-multi COLOR       Multi-prototype color

@@ -143,8 +143,8 @@ Examples:
     )
     time_group.add_argument(
         '--upper-years',
-        default='odd',
-        help='Upper branch rule: odd, even, or comma-separated years (default: odd)'
+        default='order',
+        help='Upper branch rule: order, odd, even, or comma-separated years (default: order)'
     )
     time_group.add_argument(
         '--lower-years',
