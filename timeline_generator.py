@@ -427,12 +427,11 @@ class LaTeXGenerator:
         lines.extend([
             "",
             "    % 绘制年份节点间的箭头",
-            "    \\foreach \\year/\\nextyear in {"
         ])
         
         year_list = layout_params['years']
         arrow_pairs = [f"{year_list[i]}/{year_list[i+1]}" for i in range(len(year_list)-1)]
-        lines.append("        " + ", ".join(arrow_pairs) + r"    } {")
+        lines.append("    \\foreach \\year/\\nextyear in {" + ",".join(arrow_pairs) + "} {")
         lines.append("        \\draw[arrow] (Y\\year) -- (Y\\nextyear);")
         lines.append("    }")
         
@@ -514,7 +513,7 @@ class LaTeXGenerator:
         years = sorted(df['年份'].unique())
         
         # 生成分支脊线
-        lines.append("        \\foreach \\year in {" + ", ".join(map(str, years)) + r"} {")
+        lines.append("        \\foreach \\year in {" + ",".join(map(str, years)) + r"} {")
         lines.append(f"            \\draw[spine] (Y\\year.north) -- ++(0,{self.layout.spine_length});")
         lines.append(f"            \\draw[spine] (Y\\year.south) -- ++(0,-{self.layout.spine_length});")
         lines.append("        }")
@@ -542,7 +541,7 @@ class LaTeXGenerator:
             "    % ========================================",
             "    % 4. 最后绘制所有年份节点（置于最上层，覆盖箭头末端）",
             "    % ========================================",
-            "    \\foreach \\year in {" + ", ".join(map(str, years)) + r"} {",
+            "    \\foreach \\year in {" + ",".join(map(str, years)) + r"} {",
             "        \\node[year] at (Y\\year) {\\year};",
             "    }"
         ]
