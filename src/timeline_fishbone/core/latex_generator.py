@@ -59,11 +59,20 @@ class LaTeXGenerator:
         self.arrows = arrows
         self.output = output
         self.layout_engine = SmartLayoutEngine(layout, time_logic)
+        self.category_colors = {}  # Will be populated when generating
         logger.debug("LaTeXGenerator initialized")
     
     def _generate_preamble(self) -> str:
         """Generate LaTeX preamble."""
         lines = [
+            "% Required packages/settings (add these in your LaTeX preamble):",
+            r"% \usepackage{tikz}",
+            r"% \usepackage{xcolor}",
+            r"% \usepackage{adjustbox} % provide smart scaling",
+            r"% \usepackage{geometry}",
+            r"% \geometry{a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}",
+            r"% \usetikzlibrary{positioning, matrix, fit, backgrounds, shapes, arrows.meta}",
+            "",
             r"\begin{figure}[htbp]",
             r"\centering",
             f"\\begin{{adjustbox}}{{center, max width={self.output.adjustbox_width}, "
@@ -78,26 +87,25 @@ class LaTeXGenerator:
         ]
         return '\n'.join(lines)
     
-    def _generate_styles(self) -> str:
-        """Generate TikZ style definitions."""
+    def _generate_styles(self, categories: list) -> str:
+        """
+        Generate TikZ style definitions.
+        
+        Args:
+            categories: List of categories from the data
+        """
         styles = [
             "    % ========================================",
             "    % Category color definitions",
             "    % ========================================",
         ]
         
-        # Category styles
-        categories = [
-            ('singleproto', self.colors.color_single),
-            ('multiproto', self.colors.color_multi),
-            ('adaptive', self.colors.color_adaptive),
-            ('vl', self.colors.color_vl),
-            ('dense', self.colors.color_dense),
-            ('attention', self.colors.color_attention),
-            ('hybrid', self.colors.color_hybrid),
-        ]
+        # Get dynamic category colors
+        self.category_colors = self.colors.get_category_colors(categories)
         
-        for cat, color in categories:
+        # Generate styles for each category
+        for cat in sorted(categories):
+            color = self.category_colors[cat]
             # Extract base color (before first '!') for border color
             base_color = color.split('!')[0] if '!' in color else color
             border_color = f"{base_color}!60!black"
@@ -338,8 +346,13 @@ class LaTeXGenerator:
             "(current bounding box.north east) +(0.3,0.5);"
         )
     
-    def _generate_caption(self) -> str:
-        """Generate legend and caption."""
+    def _generate_caption(self, categories: list) -> str:
+        """
+        Generate legend and caption.
+        
+        Args:
+            categories: List of categories from the data
+        """
         lines = [
             r"\end{tikzpicture}",
             r"\end{adjustbox}",
@@ -347,23 +360,19 @@ class LaTeXGenerator:
         ]
         
         if self.output.show_legend:
-            # Generate legend
-            legend_items = [
-                (self.colors.color_single, "cyan!50!black", "单原型方法"),
-                (self.colors.color_multi, "green!50!black", "多原型方法"),
-                (self.colors.color_adaptive, "yellow!70!black", "自适应方法"),
-                (self.colors.color_vl, "purple!60!black", "视觉语言方法"),
-                (self.colors.color_dense, "orange!70!black", "稠密匹配"),
-                (self.colors.color_attention, "red!60!black", "注意力匹配"),
-                (self.colors.color_hybrid, "gray!70!black", "混合细化"),
-            ]
-            
+            # Generate legend dynamically from categories
             legend_text = "颜色标识："
-            for fill, draw, desc in legend_items:
+            
+            for category in sorted(categories):
+                fill_color = self.category_colors[category]
+                # Extract base color for border
+                base_color = fill_color.split('!')[0] if '!' in fill_color else fill_color
+                border_color = f"{base_color}!60!black"
+                
                 legend_text += (
                     r"{\protect\tikz[baseline=-0.5ex]\protect\node["
-                    f"fill={fill},draw={draw},rounded corners=2pt,"
-                    f"inner sep=2pt,font=\\tiny] {{{desc}}};}}" + " "
+                    f"fill={fill_color},draw={border_color},rounded corners=2pt,"
+                    f"inner sep=2pt,font=\\tiny] {{{category}}};}}" + " "
                 )
             
             lines.append(legend_text)
@@ -386,19 +395,23 @@ class LaTeXGenerator:
         """
         logger.info("开始生成 LaTeX 代码")
         
+        # Extract unique categories from data
+        categories = df['种类'].unique().tolist()
+        logger.info(f"提取到 {len(categories)} 个种类: {', '.join(sorted(categories))}")
+        
         # Calculate layout
         layout_params = self.layout_engine.calculate_layout(df)
         
         # Generate sections
         parts = [
             self._generate_preamble(),
-            self._generate_styles(),
+            self._generate_styles(categories),
             self._generate_timeline_axis(layout_params),
             self._generate_method_nodes(df, layout_params),
             self._generate_background_layer(df),
             self._generate_year_nodes(df),
             self._generate_bounding_box(),
-            self._generate_caption(),
+            self._generate_caption(categories),
         ]
         
         latex_code = '\n'.join(parts)
