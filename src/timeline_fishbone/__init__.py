@@ -22,7 +22,7 @@ Example:
     Programmatic usage::
 
         from timeline_fishbone import generate_timeline
-        
+
         generate_timeline(
             input_file="data.csv",
             output_file="timeline.tex",
@@ -42,14 +42,14 @@ from .core import (
     LayoutConfig,
     OutputConfig,
     SmartLayoutEngine,
-    TimeLogicConfig,
     TimelineFishboneConfig,
+    TimeLogicConfig,
     ValidationError,
     VisualConfig,
     load_config,
     validate_file,
 )
-from .utils import generate_timeline, create_sample_data
+from .utils import create_sample_data, generate_timeline
 
 __all__ = [
     "__version__",

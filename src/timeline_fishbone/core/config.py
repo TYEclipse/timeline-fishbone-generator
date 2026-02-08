@@ -3,17 +3,18 @@
 """
 Configuration module for Timeline Fishbone Generator.
 
-Provides comprehensive configuration management with support for YAML/JSON files,
-command-line arguments, and programmatic configuration.
+Provides comprehensive configuration management with support for YAML/JSON
+files, command-line arguments, and programmatic configuration.
 """
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 try:
     import yaml
+
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
@@ -22,7 +23,7 @@ except ImportError:
 @dataclass
 class LayoutConfig:
     """Layout parameter configuration."""
-    
+
     timeline_width: str = "16cm"
     year_spacing: float = 2.7  # cm
     branch_distance: float = 1.2  # cm
@@ -37,17 +38,20 @@ class LayoutConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "LayoutConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
 
 
 @dataclass
 class TimeLogicConfig:
     """Time logic parameter configuration."""
-    
+
     time_direction: str = "right"  # 'right' or 'left'
     start_year: int = 2019
     end_year: int = 2025
-    upper_years: str = "order"  # 'order', 'odd', 'even', or comma-separated list
+    upper_years: str = "order"  # 'order', 'odd', 'even', or
+    # comma-separated list
     lower_years: str = "even"
 
     def to_dict(self) -> Dict[str, Any]:
@@ -57,13 +61,15 @@ class TimeLogicConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TimeLogicConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
 
 
 @dataclass
 class VisualConfig:
     """Visual style parameter configuration."""
-    
+
     node_width: str = "2.6cm"
     node_height: str = "0.5cm"
     node_font: str = r"\tiny\bfseries"
@@ -80,13 +86,15 @@ class VisualConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "VisualConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
 
 
 @dataclass
 class ColorConfig:
     """Color scheme configuration."""
-    
+
     # Legacy color fields for backward compatibility
     color_single: str = "cyan!20"
     color_multi: str = "green!20"
@@ -97,14 +105,29 @@ class ColorConfig:
     color_hybrid: str = "gray!30"
     axis_color: str = "black!70"
     conn_color: str = "gray!60"
-    
+
     # Default color palette for dynamic category assignment
     DEFAULT_COLORS = [
-        "cyan!20", "green!20", "yellow!40", "purple!20",
-        "orange!30", "red!20", "blue!20", "pink!20",
-        "teal!20", "lime!30", "magenta!20", "brown!20",
-        "violet!20", "olive!30", "navy!20", "maroon!20",
-        "gray!30", "indigo!20", "gold!30", "coral!20"
+        "cyan!20",
+        "green!20",
+        "yellow!40",
+        "purple!20",
+        "orange!30",
+        "red!20",
+        "blue!20",
+        "pink!20",
+        "teal!20",
+        "lime!30",
+        "magenta!20",
+        "brown!20",
+        "violet!20",
+        "olive!30",
+        "navy!20",
+        "maroon!20",
+        "gray!30",
+        "indigo!20",
+        "gold!30",
+        "coral!20",
     ]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -114,29 +137,31 @@ class ColorConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ColorConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
-    
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
+
     def get_category_colors(self, categories: list) -> Dict[str, str]:
         """
         Generate color mapping for given categories.
-        
+
         Args:
             categories: List of category names
-            
+
         Returns:
             Dictionary mapping category names to colors
         """
         # Legacy mapping for backward compatibility
         legacy_mapping = {
-            'singleproto': self.color_single,
-            'multiproto': self.color_multi,
-            'adaptive': self.color_adaptive,
-            'vl': self.color_vl,
-            'dense': self.color_dense,
-            'attention': self.color_attention,
-            'hybrid': self.color_hybrid,
+            "singleproto": self.color_single,
+            "multiproto": self.color_multi,
+            "adaptive": self.color_adaptive,
+            "vl": self.color_vl,
+            "dense": self.color_dense,
+            "attention": self.color_attention,
+            "hybrid": self.color_hybrid,
         }
-        
+
         color_map = {}
         for i, category in enumerate(sorted(categories)):
             # Use legacy color if available
@@ -144,15 +169,16 @@ class ColorConfig:
                 color_map[category] = legacy_mapping[category]
             else:
                 # Assign color from palette, cycling if necessary
-                color_map[category] = self.DEFAULT_COLORS[i % len(self.DEFAULT_COLORS)]
-        
+                default_len = len(self.DEFAULT_COLORS)
+                color_map[category] = self.DEFAULT_COLORS[i % default_len]
+
         return color_map
 
 
 @dataclass
 class ArrowConfig:
     """Arrow and connection parameter configuration."""
-    
+
     arrow_style: str = r"-{Stealth[length=3mm, width=2mm]}"
     arrow_color: str = "gray!70"
     arrow_shorten: str = "0.38cm"
@@ -164,13 +190,15 @@ class ArrowConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ArrowConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
 
 
 @dataclass
 class OutputConfig:
     """Output configuration."""
-    
+
     input_file: str = ""
     output_file: str = "timeline.tex"
     show_legend: bool = True
@@ -185,13 +213,15 @@ class OutputConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "OutputConfig":
         """Create from dictionary."""
-        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+        return cls(
+            **{k: v for k, v in data.items() if k in cls.__annotations__}
+        )
 
 
 @dataclass
 class TimelineFishboneConfig:
     """Main configuration class combining all sub-configurations."""
-    
+
     layout: LayoutConfig = field(default_factory=LayoutConfig)
     time_logic: TimeLogicConfig = field(default_factory=TimeLogicConfig)
     visual: VisualConfig = field(default_factory=VisualConfig)
@@ -223,16 +253,18 @@ class TimelineFishboneConfig:
         )
 
     @classmethod
-    def from_yaml(cls, file_path: Union[str, Path]) -> "TimelineFishboneConfig":
+    def from_yaml(
+        cls, file_path: Union[str, Path]
+    ) -> "TimelineFishboneConfig":
         """
         Load configuration from YAML file.
-        
+
         Args:
             file_path: Path to YAML configuration file
-            
+
         Returns:
             TimelineFishboneConfig instance
-            
+
         Raises:
             ImportError: If PyYAML is not installed
             FileNotFoundError: If file doesn't exist
@@ -243,47 +275,51 @@ class TimelineFishboneConfig:
                 "PyYAML is required to load YAML config files. "
                 "Install with: pip install pyyaml"
             )
-        
+
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {file_path}")
-        
-        with open(path, 'r', encoding='utf-8') as f:
+            msg = f"Configuration file not found: {file_path}"
+            raise FileNotFoundError(msg)
+
+        with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        
+
         return cls.from_dict(data or {})
 
     @classmethod
-    def from_json(cls, file_path: Union[str, Path]) -> "TimelineFishboneConfig":
+    def from_json(
+        cls, file_path: Union[str, Path]
+    ) -> "TimelineFishboneConfig":
         """
         Load configuration from JSON file.
-        
+
         Args:
             file_path: Path to JSON configuration file
-            
+
         Returns:
             TimelineFishboneConfig instance
-            
+
         Raises:
             FileNotFoundError: If file doesn't exist
             json.JSONDecodeError: If JSON is invalid
         """
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {file_path}")
-        
-        with open(path, 'r', encoding='utf-8') as f:
+            msg = f"Configuration file not found: {file_path}"
+            raise FileNotFoundError(msg)
+
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        
+
         return cls.from_dict(data)
 
     def save_yaml(self, file_path: Union[str, Path]) -> None:
         """
         Save configuration to YAML file.
-        
+
         Args:
             file_path: Output path for YAML file
-            
+
         Raises:
             ImportError: If PyYAML is not installed
         """
@@ -292,79 +328,85 @@ class TimelineFishboneConfig:
                 "PyYAML is required to save YAML config files. "
                 "Install with: pip install pyyaml"
             )
-        
-        with open(file_path, 'w', encoding='utf-8') as f:
-            yaml.safe_dump(self.to_dict(), f, default_flow_style=False, allow_unicode=True)
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(
+                self.to_dict(),
+                f,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
 
     def save_json(self, file_path: Union[str, Path], indent: int = 2) -> None:
         """
         Save configuration to JSON file.
-        
+
         Args:
             file_path: Output path for JSON file
             indent: JSON indentation level
         """
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=indent, ensure_ascii=False)
 
-    def merge(self, other: "TimelineFishboneConfig") -> "TimelineFishboneConfig":
+    def merge(
+        self, other: "TimelineFishboneConfig"
+    ) -> "TimelineFishboneConfig":
         """
         Merge with another configuration (other takes precedence).
-        
+
         Args:
             other: Configuration to merge with
-            
+
         Returns:
             New merged configuration
         """
         merged_dict = self.to_dict()
         other_dict = other.to_dict()
-        
+
         for section, values in other_dict.items():
             if section in merged_dict:
                 merged_dict[section].update(values)
-        
+
         return TimelineFishboneConfig.from_dict(merged_dict)
 
 
 def load_config(
-    config_file: Optional[Union[str, Path]] = None,
-    **overrides: Any
+    config_file: Optional[Union[str, Path]] = None, **overrides: Any
 ) -> TimelineFishboneConfig:
     """
     Load configuration with optional overrides.
-    
+
     Args:
         config_file: Optional path to YAML/JSON config file
         **overrides: Key-value pairs to override config values
-        
+
     Returns:
         TimelineFishboneConfig instance
-        
+
     Example:
         >>> config = load_config("config.yaml", layout__smart_spacing=True)
     """
     # Start with default config
     config = TimelineFishboneConfig()
-    
+
     # Load from file if provided
     if config_file:
         path = Path(config_file)
-        if path.suffix in ['.yaml', '.yml']:
+        if path.suffix in [".yaml", ".yml"]:
             config = TimelineFishboneConfig.from_yaml(config_file)
-        elif path.suffix == '.json':
+        elif path.suffix == ".json":
             config = TimelineFishboneConfig.from_json(config_file)
         else:
             raise ValueError(f"Unsupported config file format: {path.suffix}")
-    
+
     # Apply overrides using double underscore notation
     # e.g., layout__smart_spacing=True -> config.layout.smart_spacing = True
     for key, value in overrides.items():
-        if '__' in key:
-            section, param = key.split('__', 1)
+        if "__" in key:
+            section, param = key.split("__", 1)
             if hasattr(config, section):
                 section_obj = getattr(config, section)
                 if hasattr(section_obj, param):
                     setattr(section_obj, param, value)
-    
+
     return config
