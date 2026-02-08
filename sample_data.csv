@@ -1,0 +1,19 @@
+年份,种类,方法名,引用标识
+2019,singleproto,PANet,Wang2019PANet
+2020,multiproto,PPNet,Liu2020PPNet
+2021,multiproto,ASGNet,Li2021ASGNet
+2021,dense,HSNet,Min2021HSNet
+2021,attention,CWT,Lu2021CWT
+2022,singleproto,PFENet,Tian2022PFENet
+2022,singleproto,BAM,Lang2022BAM
+2022,adaptive,DPCN,Liu2022DynamicPC
+2023,adaptive,Self-reg,Ding2023Selfregularized
+2023,attention,HDMNet,Peng2023HDMNet
+2023,hybrid,SCCAN,Xu2023SCCAN
+2024,vl,Proto-CLIP,P2024ProtoCLIP
+2024,vl,TransBA,Chen2024TransformerBA
+2024,vl,Zhu et al.,Zhu2024Unleashing
+2024,adaptive,AdaptiveSS,Shen2024AdaptiveSS
+2024,hybrid,DAM,Chen2024DAM
+2025,multiproto,HMPD,Xu2025HMPD
+2025,multiproto,ProtoPT,Yu2025PrototypicalPT

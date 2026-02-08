@@ -29,7 +29,7 @@ A professional Python package for generating publication-ready LaTeX TikZ timeli
 - [Contributing](#contributing)
 - [License](#license)
 
-## 🚀 Installation
+## Installation
 
 ### From PyPI (when published)
 
@@ -53,7 +53,7 @@ cd timeline-fishbone
 pip install -e ".[dev]"
 ```
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Create Sample Data
 
@@ -73,7 +73,7 @@ timeline-fishbone -i sample_data.csv -o timeline.tex
 pdflatex your_document.tex  # Include the generated timeline.tex
 ```
 
-## 📖 Usage Examples
+## Usage Examples
 
 ### Command Line
 
@@ -150,7 +150,7 @@ latex_code = generator.generate(df)
 config.save_yaml("my_config.yaml")
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Configuration File Example (YAML)
 
@@ -186,14 +186,14 @@ output:
 2. Configuration file (YAML/JSON)
 3. Command-line arguments / API parameters
 
-## 📊 Data Format
+## Data Format
 
 ### CSV Format
 
 Your CSV file must contain these columns:
 
 | Column | Description | Example |
-|--------|-------------|---------|
+| -------- | ------------- | --------- |
 | 年份 | Year (integer) | 2020 |
 | 种类 | Category | singleproto, multiproto, adaptive, vl, dense, attention, hybrid |
 | 方法名 | Method name | PANet |
@@ -218,9 +218,9 @@ Your CSV file must contain these columns:
 - `attention` - Attention-based (red)
 - `hybrid` - Hybrid refinement (gray)
 
-## 🖥️ Command Line Interface
+## Command Line Interface
 
-```
+```plaintext
 usage: timeline-fishbone [-h] [--version] [--create-sample FILE] 
                         [--validate FILE] [-i INPUT_FILE] [-o OUTPUT]
                         [-c CONFIG_FILE] [OPTIONS...]
@@ -246,7 +246,7 @@ Options:
   -q, --quiet              Suppress output except errors
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 ### High-level Functions
 
@@ -288,7 +288,7 @@ def create_sample_data(output_file: Union[str, Path] = "sample_data.csv") -> Non
 
 See [docs/api_reference.md](docs/api_reference.md) and [docs/index.md](docs/index.md) for documentation entry points.
 
-## 🔧 Development
+## Development
 
 ### Running Tests
 
@@ -319,7 +319,7 @@ flake8 src/ tests/
 mypy src/
 ```
 
-## 📄 LaTeX Requirements
+## LaTeX Requirements
 
 Your LaTeX document needs these packages:
 
@@ -329,7 +329,7 @@ Your LaTeX document needs these packages:
 \usepackage{adjustbox}
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please:
 
@@ -345,22 +345,22 @@ Contributions are welcome! Please:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by academic timeline visualization needs
 - Built with modern Python best practices
 - Community feedback and contributions
 
-## 📮 Contact
+## Contact
 
 - GitHub Issues: [Timeline Fishbone Issues](https://github.com/tyeclipse/timeline-fishbone/issues)
 - Documentation: [Read the Docs](https://timeline-fishbone.readthedocs.io)
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] PDF/PNG export via matplotlib
 - [ ] Interactive web preview

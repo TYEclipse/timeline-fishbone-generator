@@ -98,9 +98,13 @@ class LaTeXGenerator:
         ]
         
         for cat, color in categories:
+            # Extract base color (before first '!') for border color
+            base_color = color.split('!')[0] if '!' in color else color
+            border_color = f"{base_color}!60!black"
+            
             styles.append(
                 f"    {cat}/.style={{\n"
-                f"        fill={color}, draw={color}!60!black, "
+                f"        fill={color}, draw={border_color}, "
                 f"line width={self.visual.line_width},\n"
                 f"        rounded corners={self.visual.rounded_corners}, "
                 f"minimum width={self.visual.node_width}, "
@@ -151,7 +155,7 @@ class LaTeXGenerator:
         Returns:
             Formatted LaTeX text
         """
-        ref_cmd = f"{{\\{self.visual.ref_font}\\cite{{{ref}}}}}"
+        ref_cmd = f"{{{self.visual.ref_font}\\cite{{{ref}}}}}"
         
         if self.visual.max_lines == 1:
             # Single line: use ~ separator
@@ -184,11 +188,10 @@ class LaTeXGenerator:
             lines.extend([
                 "",
                 "    % Draw arrows between year nodes",
-                "    \\foreach \\year/\\nextyear in {",
             ])
             
             arrow_pairs = [f"{years[i]}/{years[i+1]}" for i in range(len(years) - 1)]
-            lines.append("        " + ", ".join(arrow_pairs) + "    } {")
+            lines.append("    \\foreach \\year/\\nextyear in {" + ",".join(arrow_pairs) + "} {")
             lines.append("        \\draw[arrow] (Y\\year) -- (Y\\nextyear);")
             lines.append("    }")
         
@@ -234,8 +237,9 @@ class LaTeXGenerator:
             else:
                 # Multiple nodes - use matrix
                 anchor = "south" if side == "above" else "north"
+                position = "above" if side == "above" else "below"
                 matrix_pos = (
-                    f"{anchor}={layout_params['adjusted_branch']}cm of Y{year}"
+                    f"{position}={layout_params['adjusted_branch']}cm of Y{year}"
                 )
                 
                 lines.append(
@@ -278,7 +282,7 @@ class LaTeXGenerator:
         years = sorted(df['年份'].unique())
         
         # Spines
-        lines.append("        \\foreach \\year in {" + ", ".join(map(str, years)) + "} {")
+        lines.append("        \\foreach \\year in {" + ",".join(map(str, years)) + "} {")
         lines.append(
             f"            \\draw[spine] (Y\\year.north) -- ++(0,{self.layout.spine_length});"
         )
@@ -316,7 +320,7 @@ class LaTeXGenerator:
             "    % ========================================",
             "    % 4. Draw year nodes on top layer",
             "    % ========================================",
-            "    \\foreach \\year in {" + ", ".join(map(str, years)) + "} {",
+            "    \\foreach \\year in {" + ",".join(map(str, years)) + "} {",
             "        \\node[year] at (Y\\year) {\\year};",
             "    }",
         ]
