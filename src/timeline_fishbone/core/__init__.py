@@ -12,8 +12,8 @@ from .config import (
     ColorConfig,
     LayoutConfig,
     OutputConfig,
-    TimeLogicConfig,
     TimelineFishboneConfig,
+    TimeLogicConfig,
     VisualConfig,
     load_config,
 )
