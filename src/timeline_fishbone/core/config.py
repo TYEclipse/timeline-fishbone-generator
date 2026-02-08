@@ -47,7 +47,7 @@ class TimeLogicConfig:
     time_direction: str = "right"  # 'right' or 'left'
     start_year: int = 2019
     end_year: int = 2025
-    upper_years: str = "odd"  # 'odd', 'even', or comma-separated list
+    upper_years: str = "order"  # 'order', 'odd', 'even', or comma-separated list
     lower_years: str = "even"
 
     def to_dict(self) -> Dict[str, Any]:

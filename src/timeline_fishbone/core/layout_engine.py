@@ -34,6 +34,7 @@ class SmartLayoutEngine:
         """
         self.config = layout_config
         self.time_config = time_config
+        self._year_order: List[int] = []
         logger.debug("SmartLayoutEngine initialized")
     
     def calculate_layout(self, df: pd.DataFrame) -> Dict[str, Any]:
@@ -57,6 +58,7 @@ class SmartLayoutEngine:
         year_counts = df.groupby('年份').size().to_dict()
         max_nodes = max(year_counts.values()) if year_counts else 1
         years = sorted(df['年份'].unique())
+        self._year_order = years
         
         logger.info(f"处理 {len(years)} 个年份，最多 {max_nodes} 个节点/年")
         
@@ -135,8 +137,16 @@ class SmartLayoutEngine:
         Returns:
             'above' or 'below'
         """
-        upper_rule = self.time_config.upper_years.lower()
-        
+        upper_rule = (self.time_config.upper_years or "").lower()
+        year_order = self._year_order or [year]
+
+        if upper_rule in {'order', 'sequence', 'index'}:
+            try:
+                index = year_order.index(year)
+            except ValueError:
+                index = 0
+            return 'above' if index % 2 == 0 else 'below'
+
         if upper_rule == 'odd':
             upper_years_fn = lambda y: y % 2 == 1
         elif upper_rule == 'even':
@@ -144,15 +154,19 @@ class SmartLayoutEngine:
         else:
             # Parse comma-separated year list
             try:
-                upper_list = [int(y.strip()) for y in upper_rule.split(',')]
+                upper_list = [int(y.strip()) for y in upper_rule.split(',') if y.strip()]
                 upper_years_fn = lambda y: y in upper_list
             except (ValueError, AttributeError):
                 logger.warning(
                     f"无效的 upper_years 规则: {upper_rule}，"
-                    "使用默认值 'odd'"
+                    "使用默认值 'order'"
                 )
-                upper_years_fn = lambda y: y % 2 == 1
-        
+                try:
+                    index = year_order.index(year)
+                except ValueError:
+                    index = 0
+                return 'above' if index % 2 == 0 else 'below'
+
         return 'above' if upper_years_fn(year) else 'below'
     
     def get_node_distribution(self, df: pd.DataFrame) -> Dict[int, Dict[str, int]]:
@@ -166,8 +180,11 @@ class SmartLayoutEngine:
             Dictionary mapping year to {'above': count, 'below': count}
         """
         distribution = {}
+        years = sorted(df['年份'].unique())
+        if not self._year_order:
+            self._year_order = years
         
-        for year in sorted(df['年份'].unique()):
+        for year in years:
             side = self.determine_side(year)
             year_data = df[df['年份'] == year]
             count = len(year_data)

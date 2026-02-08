@@ -47,7 +47,7 @@ class TimeLogicConfig:
     time_direction: str = "right"  # 'right' or 'left'
     start_year: int = 2019
     end_year: int = 2025
-    upper_years: str = "odd"  # 'odd', 'even', or comma-separated list
+    upper_years: str = "order"  # 'order', 'odd', 'even', or comma-separated list
     lower_years: str = "even"
 
 
@@ -178,6 +178,7 @@ class SmartLayoutEngine:
     def __init__(self, config: LayoutConfig, time_config: TimeLogicConfig):
         self.config = config
         self.time_config = time_config
+        self._year_order: List[int] = []
     
     def calculate_layout(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
@@ -199,6 +200,7 @@ class SmartLayoutEngine:
             'years': sorted(df['年份'].unique()),
             'positions': {}
         }
+        self._year_order = layout_params['years']
         
         # 智能间距调整
         if self.config.smart_spacing:
@@ -245,8 +247,16 @@ class SmartLayoutEngine:
         Returns:
             'above' 或 'below'
         """
-        # 解析上方规则
-        upper_rule = self.time_config.upper_years.lower()
+        upper_rule = (self.time_config.upper_years or "").lower()
+        year_order = self._year_order or [year]
+
+        if upper_rule in {'order', 'sequence', 'index'}:
+            try:
+                index = year_order.index(year)
+            except ValueError:
+                index = 0
+            return 'above' if index % 2 == 0 else 'below'
+
         if upper_rule == 'odd':
             upper_years = lambda y: y % 2 == 1
         elif upper_rule == 'even':
@@ -254,10 +264,14 @@ class SmartLayoutEngine:
         else:
             # 解析具体年份列表
             try:
-                upper_list = [int(y.strip()) for y in upper_rule.split(',')]
+                upper_list = [int(y.strip()) for y in upper_rule.split(',') if y.strip()]
                 upper_years = lambda y: y in upper_list
-            except:
-                upper_years = lambda y: y % 2 == 1
+            except Exception:
+                try:
+                    index = year_order.index(year)
+                except ValueError:
+                    index = 0
+                return 'above' if index % 2 == 0 else 'below'
         
         return 'above' if upper_years(year) else 'below'
 
@@ -698,8 +712,8 @@ def main():
                            help='起始年份 (默认: 2019)')
     time_group.add_argument('--end-year', type=int, default=2025,
                            help='结束年份 (默认: 2025)')
-    time_group.add_argument('--upper-years', default='odd',
-                           help='上方分支规则: odd, even 或逗号分隔的年份列表 (默认: odd)')
+    time_group.add_argument('--upper-years', default='order',
+                           help='上方分支规则: order, odd, even 或逗号分隔的年份列表 (默认: order)')
     time_group.add_argument('--lower-years', default='even',
                            help='下方分支规则 (默认: even)')
     
