@@ -48,7 +48,7 @@ class TestIntegration:
             assert Path(output_file).exists()
 
             # Verify file content
-            content = Path(output_file).read_text()
+            content = Path(output_file).read_text(encoding="utf-8")
             assert content == latex_code
             assert "\\begin{figure}" in content
 

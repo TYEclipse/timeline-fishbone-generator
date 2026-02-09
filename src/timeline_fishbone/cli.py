@@ -402,7 +402,7 @@ def args_to_config_overrides(args: argparse.Namespace) -> dict:
 
 def main(argv: Optional[list] = None) -> int:
     """
-    Main CLI entry point.
+    Run the CLI entry point.
 
     Args:
         argv: Command-line arguments (defaults to sys.argv)
@@ -446,12 +446,12 @@ def main(argv: Optional[list] = None) -> int:
         )
 
         if not args.quiet:
-            print(f"✓ 成功生成: {args.output}")
+            print(f"[OK] 成功生成: {args.output}")
 
         return 0
 
     except Exception as e:
-        print(f"✗ 错误: {e}", file=sys.stderr)
+        print(f"[ERROR] 错误: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
 
