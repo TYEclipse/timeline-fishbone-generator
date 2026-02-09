@@ -199,7 +199,21 @@ class DataValidator:
 
         try:
             if path.suffix.lower() == ".csv":
-                df = pd.read_csv(file_path, encoding="utf-8")
+                # Try multiple encodings
+                encodings = ["utf-8", "utf-8-sig", "gbk", "gb2312", "cp1252"]
+                df = None
+                last_error = None
+                for encoding in encodings:
+                    try:
+                        df = pd.read_csv(file_path, encoding=encoding)
+                        break
+                    except UnicodeDecodeError as e:
+                        last_error = e
+                        continue
+                if df is None:
+                    raise ValidationError(
+                        "读取文件失败: 无法解码文件，请确保使用UTF-8编码"
+                    ) from last_error
             elif path.suffix.lower() == ".json":
                 df = pd.read_json(file_path, encoding="utf-8")
             else:
@@ -211,6 +225,8 @@ class DataValidator:
             raise ValidationError("数据文件为空")
         except pd.errors.ParserError as e:
             raise ValidationError(f"文件解析失败: {e}")
+        except ValidationError:
+            raise
         except Exception as e:
             raise ValidationError(f"读取文件失败: {e}")
 

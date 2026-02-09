@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(level: str = "INFO") -> None:
     """
-    Setup logging configuration.
+    Set up logging configuration.
 
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
@@ -197,7 +197,7 @@ def create_sample_data(
     df.to_csv(output_path, index=False, encoding="utf-8")
 
     logger.info(f"示例数据文件已创建: {output_file}")
-    print(f"✓ 示例数据文件已创建: {output_file}")
+    print(f"[OK] 示例数据文件已创建: {output_file}")
     print(f"  包含 {len(df)} 条记录，{df['年份'].nunique()} 个年份")
 
 
@@ -213,12 +213,12 @@ def validate_data_file(file_path: Union[str, Path]) -> bool:
     """
     try:
         df = DataValidator.load_and_validate(file_path)
-        print(f"✓ 数据验证通过: {file_path}")
+        print(f"[OK] 数据验证通过: {file_path}")
         print(f"  记录数: {len(df)}")
         print(f"  年份范围: {df['年份'].min()} - {df['年份'].max()}")
         print(f"  种类分布: {dict(df['种类'].value_counts())}")
         return True
     except Exception as e:
-        print(f"✗ 数据验证失败: {file_path}")
+        print(f"[ERROR] 数据验证失败: {file_path}")
         print(f"  错误: {e}")
         return False
