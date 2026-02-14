@@ -183,3 +183,33 @@ class TestLaTeXGenerator:
 
         latex_code = generator.generate(sample_data)
         assert "\\caption{" in latex_code
+
+    def test_caption_bracket_matching(self, sample_data):
+        """Test that caption has properly matched brackets."""
+        output = OutputConfig(show_legend=True)
+        generator = LaTeXGenerator(
+            LayoutConfig(),
+            TimeLogicConfig(),
+            VisualConfig(),
+            ColorConfig(),
+            ArrowConfig(),
+            output,
+        )
+
+        latex_code = generator.generate(sample_data)
+
+        # Extract caption line
+        import re
+
+        caption_match = re.search(r"\\caption\{[^}]*\}", latex_code, re.DOTALL)
+        assert caption_match is not None, "Caption not found"
+
+        # Ensure no double }} at end of caption
+        assert not caption_match.group().endswith(
+            "}}"
+        ), "Caption should not end with double }}"
+
+        # Verify single } closing
+        assert caption_match.group().endswith(
+            "}"
+        ), "Caption should end with single }"

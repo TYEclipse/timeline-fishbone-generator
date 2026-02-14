@@ -426,7 +426,7 @@ class LaTeXGenerator:
 
             lines.append(legend_text)
 
-        lines.append("}}")
+        lines.append("}")
         lines.append(f"\\label{{{self.output.label}}}")
         lines.append(r"\end{figure}")
 
