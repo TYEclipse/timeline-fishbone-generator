@@ -58,18 +58,49 @@ class TestDataValidator:
         with pytest.raises(ValidationError, match="存在空值"):
             DataValidator.validate_dataframe(df)
 
-    def test_invalid_categories(self):
-        """Test validation with invalid categories."""
+    def test_custom_categories(self):
+        """Test validation with custom categories.
+
+        Any category is now valid.
+        """
         df = pd.DataFrame(
             {
                 "年份": [2020, 2021, 2022],
-                "种类": ["singleproto", "invalid_type", "adaptive"],
+                "种类": ["singleproto", "自定义类别", "少样本医学分割"],
                 "方法名": ["Method1", "Method2", "Method3"],
                 "引用标识": ["Ref1", "Ref2", "Ref3"],
             }
         )
 
-        with pytest.raises(ValidationError, match="无效的种类"):
+        # Should not raise - custom categories are now accepted
+        DataValidator.validate_dataframe(df)
+
+    def test_mixed_language_categories(self):
+        """Test validation with mixed language categories."""
+        df = pd.DataFrame(
+            {
+                "年份": [2024, 2025],
+                "种类": ["少样本医学分割", "Few-shot Learning"],
+                "方法名": ["PGGRNet", "CustomNet"],
+                "引用标识": ["Huang2025", "Custom2024"],
+            }
+        )
+
+        # Should not raise - any category name is valid
+        DataValidator.validate_dataframe(df)
+
+    def test_empty_category_validation(self):
+        """Test that empty categories are caught by null value validation."""
+        df = pd.DataFrame(
+            {
+                "年份": [2020, 2021, 2022],
+                "种类": ["singleproto", None, "adaptive"],
+                "方法名": ["Method1", "Method2", "Method3"],
+                "引用标识": ["Ref1", "Ref2", "Ref3"],
+            }
+        )
+
+        with pytest.raises(ValidationError, match="存在空值"):
             DataValidator.validate_dataframe(df)
 
     def test_invalid_years(self):
