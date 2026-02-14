@@ -42,6 +42,9 @@ pip install timeline-fishbone
 ```bash
 git clone https://github.com/tyeclipse/timeline-fishbone.git
 cd timeline-fishbone
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# .\venv\Scripts\activate  # Windows
 pip install -e .
 ```
 
@@ -195,9 +198,11 @@ Your CSV file must contain these columns:
 | Column | Description | Example |
 | -------- | ------------- | --------- |
 | 年份 | Year (integer) | 2020 |
-| 种类 | Category | singleproto, multiproto, adaptive, vl, dense, attention, hybrid |
+| 种类 | Category (any custom text) | singleproto, 少样本医学分割, etc. |
 | 方法名 | Method name | PANet |
 | 引用标识 | Citation key | Wang2019PANet |
+
+**Note:** The `种类` (Category) column now accepts any custom text. You are not limited to predefined categories.
 
 ### Example CSV
 
@@ -206,9 +211,15 @@ Your CSV file must contain these columns:
 2019,singleproto,PANet,Wang2019PANet
 2020,multiproto,PPNet,Liu2020PPNet
 2021,adaptive,ASGNet,Li2021ASGNet
+2025,少样本医学分割,PGGRNet,Huang2025PGGRNet
+2024,少样本图像分割,MDIINet,Chen2024MDIINet
 ```
 
-### Valid Categories
+### Categories
+
+**You can use any custom category names in your CSV file.** The system will automatically detect and process all unique categories from your input data.
+
+Common predefined categories (for reference):
 
 - `singleproto` - Single prototype methods (cyan)
 - `multiproto` - Multi-prototype methods (green)
@@ -217,6 +228,13 @@ Your CSV file must contain these columns:
 - `dense` - Dense matching (orange)
 - `attention` - Attention-based (red)
 - `hybrid` - Hybrid refinement (gray)
+
+You can also use Chinese or any other language:
+
+- `少样本医学分割` - Few-shot medical segmentation
+- `少样本图像分割` - Few-shot image segmentation
+- `少样本缺陷分割` - Few-shot defect segmentation
+- etc.
 
 ## Command Line Interface
 
